@@ -30,9 +30,10 @@ class CCA(Classifier):
     name = "cca"
     requires_training = False
 
-    def __init__(self, freqs, fs, n_harmonics: int = 5):
+    def __init__(self, freqs, fs, n_harmonics: int = 5, phases=None):
         super().__init__(freqs, fs)
         self.n_harmonics = n_harmonics
+        self.phases = list(phases) if phases is not None else None
 
     def fit(self, X, y):
         return self
@@ -41,7 +42,8 @@ class CCA(Classifier):
         if X.ndim == 2:
             X = X[None]
         n_samples = X.shape[-1]
-        refs = reference_signals(self.freqs, self.fs, n_samples, self.n_harmonics)
+        refs = reference_signals(self.freqs, self.fs, n_samples,
+                                 self.n_harmonics, phases=self.phases)
         out = np.empty(len(X), dtype=int)
         for i, x in enumerate(X):
             scores = [_max_canon_corr(x, r) for r in refs]
