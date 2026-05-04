@@ -1,6 +1,6 @@
-# SSVEP BCI — Chinese speller + offline benchmark + real-time demo
+# SSVEP BCI — Chinese speller 
 
-A portfolio-grade SSVEP brain-computer interface project. The headline app is
+A SSVEP brain-computer interface project I did durng high school under guidance from Prof.Cai Qing and ECNU. The headline app is
 a **26-letter Chinese pinyin speller** with a candidate-row language model
 that lets the user type Chinese characters/words by gazing at one letter and
 then riding the prediction layer (`w → 我 → 想要 → 喝水`), cutting the typical
