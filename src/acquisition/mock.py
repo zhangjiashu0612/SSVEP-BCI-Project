@@ -40,10 +40,35 @@ class MockSource(EEGSource, LSLPublisher):
         self._n_pushed = 0
 
     def set_target(self, idx: int) -> None:
-        self._target_idx = int(idx) % len(self.freqs)
+        """idx >= 0: SSVEP target index;  idx == -1: rest (pure noise)."""
+        self._target_idx = int(idx) if idx == -1 else int(idx) % len(self.freqs)
+
+    def set_schedule(self, schedule: list[tuple[float, int]]) -> None:
+        """Time-sorted list of (t_seconds_since_start, target_idx).
+
+        Used by speller demos to simulate the user looking at one cell, then a
+        candidate, then another, etc. The producer thread picks up the scheduled
+        target whenever its synth call falls past the threshold time.
+        """
+        self._schedule = sorted(schedule, key=lambda kv: kv[0])
+        self._schedule_idx = 0
+
+    def _maybe_advance_schedule(self, t_now: float) -> None:
+        sch = getattr(self, "_schedule", None)
+        if not sch:
+            return
+        i = getattr(self, "_schedule_idx", 0)
+        while i < len(sch) and sch[i][0] <= t_now:
+            self.set_target(sch[i][1])
+            i += 1
+        self._schedule_idx = i
 
     def synth(self, n_samples: int, t0: float) -> np.ndarray:
+        """Synthesize n_samples. target_idx == -1 emits pure noise (rest)."""
         n_ch = len(self.channels)
+        if self._target_idx < 0:
+            # Rest / inter-trial: pure broadband noise, no SSVEP component.
+            return self._rng.normal(0, 1.0, size=(n_ch, n_samples)).astype(np.float32)
         t = t0 + np.arange(n_samples) / self.fs
         f = self.freqs[self._target_idx]
         sig = np.zeros((n_ch, n_samples), dtype=np.float32)
@@ -60,7 +85,9 @@ class MockSource(EEGSource, LSLPublisher):
         chunk_samples = max(1, int(self.fs * 0.02))  # 20 ms chunks
         while self._running:
             now = time.time()
-            target_n = int((now - self._start_time) * self.fs)
+            t_elapsed = now - self._start_time
+            self._maybe_advance_schedule(t_elapsed)
+            target_n = int(t_elapsed * self.fs)
             n_new = target_n - self._n_pushed
             if n_new < chunk_samples:
                 time.sleep(0.01)

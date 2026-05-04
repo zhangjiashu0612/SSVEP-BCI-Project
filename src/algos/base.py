@@ -37,14 +37,25 @@ class Classifier(ABC):
 
 
 def reference_signals(freqs: Sequence[float], fs: float, n_samples: int,
-                      n_harmonics: int = 5) -> list[np.ndarray]:
-    """Sin/cos reference banks per target frequency. Each entry is (2*n_harmonics, n_samples)."""
+                      n_harmonics: int = 5,
+                      phases: Sequence[float] | None = None) -> list[np.ndarray]:
+    """Sin/cos reference banks per target. Each entry is (2*n_harmonics, n_samples).
+
+    If `phases` is provided it must have the same length as `freqs`. The
+    fundamental sin/cos pair is shifted by `phases[i]`; harmonics scale the
+    phase accordingly (h*phi). When `phases is None` the bank is phase-zero
+    (the original behavior, used for plain frequency-only encoding).
+    """
     t = np.arange(n_samples) / fs
+    if phases is None:
+        phases = [0.0] * len(freqs)
+    if len(phases) != len(freqs):
+        raise ValueError("phases must match freqs in length")
     refs = []
-    for f in freqs:
+    for f, phi in zip(freqs, phases):
         rows = []
         for h in range(1, n_harmonics + 1):
-            rows.append(np.sin(2 * np.pi * h * f * t))
-            rows.append(np.cos(2 * np.pi * h * f * t))
+            rows.append(np.sin(2 * np.pi * h * f * t + h * phi))
+            rows.append(np.cos(2 * np.pi * h * f * t + h * phi))
         refs.append(np.vstack(rows))
     return refs

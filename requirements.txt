@@ -10,3 +10,5 @@ matplotlib>=3.7
 pandas>=2.0
 pytest>=7.4
 pyyaml>=6.0
+pypinyin>=0.50
+jieba>=0.42

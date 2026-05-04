@@ -20,7 +20,8 @@ class FBCCA(Classifier):
 
     def __init__(self, freqs, fs, n_subbands: int = 7, low_cut: float = 8.0,
                  high_cut: float = 90.0, cheby_order: int = 6, cheby_rp: float = 0.5,
-                 weight_a: float = 1.25, weight_b: float = 0.25, n_harmonics: int = 5):
+                 weight_a: float = 1.25, weight_b: float = 0.25, n_harmonics: int = 5,
+                 phases=None):
         super().__init__(freqs, fs)
         self.n_subbands = n_subbands
         self.low_cut = low_cut
@@ -30,6 +31,7 @@ class FBCCA(Classifier):
         self.weight_a = weight_a
         self.weight_b = weight_b
         self.n_harmonics = n_harmonics
+        self.phases = list(phases) if phases is not None else None
         self._sos_bank = self._build_bank()
         self._weights = np.array(
             [(n ** (-weight_a)) + weight_b for n in range(1, n_subbands + 1)]
@@ -49,7 +51,8 @@ class FBCCA(Classifier):
         if X.ndim == 2:
             X = X[None]
         n_samples = X.shape[-1]
-        refs = reference_signals(self.freqs, self.fs, n_samples, self.n_harmonics)
+        refs = reference_signals(self.freqs, self.fs, n_samples,
+                                 self.n_harmonics, phases=self.phases)
         out = np.empty(len(X), dtype=int)
         for i, x in enumerate(X):
             band_scores = np.zeros((self.n_subbands, len(self.freqs)))

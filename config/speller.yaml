@@ -1,0 +1,59 @@
+acquisition:
+  fs: 250
+  channels: [PO7, PO3, POz, PO4, PO8, O1, Oz, O2]
+  cyton:
+    serial_port: /dev/cu.usbserial-DM00DXR8
+    board_id: 0
+  mock:
+    snr_db: 8.0
+    seed: 42
+
+stimulus:
+  monitor_hz: 60
+  size_px: 100
+  fullscreen: false
+  candidate_slot_size_px: [200, 80]
+  letter_layout:
+    - [a, b, c, d, e, f, g]
+    - [h, i, j, k, l, m, n]
+    - [o, p, q, r, s, t, u]
+    - [v, w, x, y, z]
+
+processing:
+  bandpass: [6.0, 60.0]
+  notch_hz: 60.0
+  filter_order: 4
+  window_s: 2.5
+  step_ms: 250
+  ring_buffer_s: 8.0
+  # speller has 32 classes — vote_window 7 makes spurious unanimous consensus
+  # during noise rest astronomically rare; on actual signal at SNR ≥ 6, FBCCA
+  # is correct >95% per window so 7/7 unanimous is reached comfortably.
+  vote_window: 7
+  algo: fbcca
+
+fbcca:
+  n_subbands: 7
+  low_cut: 8.0
+  high_cut: 90.0
+  cheby_order: 6
+  cheby_rp: 0.5
+  weight_a: 1.25
+  weight_b: 0.25
+  n_harmonics: 5
+
+cca:
+  n_harmonics: 5
+
+trca:
+  filterbank: true
+
+speller:
+  freq_grid:
+    low_hz: 8.0
+    step_hz: 0.2
+    n_targets: 32
+    n_candidates: 6
+  lm_resources_dir: data/lm
+  k_per_layer: 6
+  window_title: SSVEP Speller
