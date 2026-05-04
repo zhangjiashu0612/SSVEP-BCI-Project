@@ -1,0 +1,56 @@
+acquisition:
+  fs: 250
+  channels: [PO7, PO3, POz, PO4, PO8, O1, Oz, O2]
+  cyton:
+    serial_port: /dev/cu.usbserial-DM00DXR8
+    board_id: 0
+  mock:
+    snr_db: 6.0
+    seed: 42
+
+stimulus:
+  monitor_hz: 60
+  freqs_hz: [7.5, 8.57142857, 10.0, 12.0]
+  phases_rad: [0.0, 1.5707963, 3.1415926, 4.7123889]
+  size_px: 200
+  fullscreen: false
+  duration_s: 5.0
+  isi_s: 1.0
+
+processing:
+  bandpass: [6.0, 60.0]
+  notch_hz: 60.0
+  filter_order: 4
+  window_s: 2.0
+  step_ms: 200
+  ring_buffer_s: 6.0
+  vote_window: 3
+  algo: fbcca
+
+fbcca:
+  n_subbands: 7
+  low_cut: 8.0
+  high_cut: 90.0
+  cheby_order: 6
+  cheby_rp: 0.5
+  weight_a: 1.25
+  weight_b: 0.25
+  n_harmonics: 5
+
+cca:
+  n_harmonics: 5
+
+psda:
+  n_harmonics: 3
+  freq_resolution_hz: 0.1
+
+trca:
+  n_components: 1
+  filterbank: true
+
+benchmark:
+  windows_s: [0.5, 1.0, 2.0, 3.0, 4.0]
+  datasets: [Wang2016, Nakanishi2015]
+  algos: [psda, cca, fbcca, trca]
+  output_dir: results
+  models_dir: models

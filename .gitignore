@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+.DS_Store
+.vscode/
+.idea/
+results/*.csv
+results/*.png
+models/*.pkl
+mne_data/
